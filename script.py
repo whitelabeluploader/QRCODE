@@ -1,41 +1,37 @@
 from browser import document, html, window
-import qrcode
-from io import BytesIO
-import base64
 
 def generate_qr(event):
     user_input = document["user-input"].value
     error_level = document["error-level"].value
     box_size = int(document["box-size"].value)
-    border_size = int(document["border-size"].value)
+    message_container = document["message-container"]
 
-    if user_input:
-        error_correction = {
-            "L": qrcode.constants.ERROR_CORRECT_L,
-            "M": qrcode.constants.ERROR_CORRECT_M,
-            "Q": qrcode.constants.ERROR_CORRECT_Q,
-            "H": qrcode.constants.ERROR_CORRECT_H
-        }
+    # Clear any previous messages
+    message_container.clear()
 
-        qr = qrcode.QRCode(
-            version=1,  # You can modify this to fit more data if needed
-            error_correction=error_correction[error_level],
-            box_size=box_size,
-            border=border_size,
+    if user_input.strip():  # Check for valid input
+        # Create a new QRious instance with the user's input and settings
+        qr = window.QRious.new(
+            value=user_input,  # The data to encode in the QR code
+            errorCorrectionLevel=error_level,  # Set the error correction level
+            size=box_size * 10,  # Scale the size based on user input
+            foreground="black",   # Set the QR code color
+            background="white"    # Set the background color
         )
-        qr.add_data(user_input)
-        qr.make(fit=True)
-        
-        img = qr.make_image(fill='black', back_color='white')
-        buffered = BytesIO()
-        img.save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode()
-        
-        img_element = html.IMG(src=f"data:image/png;base64,{img_str}")
-        qr_code_container.clear()  # Clear any previous QR code
-        qr_code_container <= img_element  # Append the new QR code image
-    else:
-        window.alert("Please enter text or URL.")
 
-qr_code_container = document["qr-code-container"]
+        # Get the QR code's Data URL
+        qr_code_image_url = qr.toDataURL()  # Use QRious to convert to data URL
+
+        # Set the src attribute of the image element to the QR code data URL
+        qr_code_element = document["qr-code-image"]
+        qr_code_element.attrs['src'] = qr_code_image_url  # Update source to Data URL
+        qr_code_element.style.display = 'block'  # Make the image visible
+
+        # Show a success message
+        message_container <= html.P("QR Code generated successfully!", style={"color": "green"})
+    else:
+        # Show an error message if no input is provided
+        message_container <= html.P("Please enter text or URL.", style={"color": "red"})
+
+# Bind the button click event to the generate_qr function
 document["generate-btn"].bind("click", generate_qr)
