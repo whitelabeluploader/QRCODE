@@ -35,7 +35,10 @@
             <input type="number" id="border-size" value="4" min="1" max="10">
         </div>
         <button id="generate-btn">Generate QR Code</button>
-        <div id="qr-code-container"></div>
+        <div id="qr-code-container">
+            <img id="qr-code-image" alt="Your QR Code Will Appear Here" style="display:none; margin-top: 20px;"/>
+        </div>
+        <div id="message-container" style="color:red; margin-top: 10px;"></div>
     </div>
     <script type="text/python" src="script.py"></script>
 </body>
